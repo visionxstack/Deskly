@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Layers, Mail, Lock, User, Building, UserPlus, AlertCircle } from './Icons';
 
 function Register({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -44,67 +45,147 @@ function Register({ onLogin }) {
   };
 
   return (
-    <div className="card" style={{ maxWidth: '400px', margin: '2rem auto' }}>
-      <h2 style={{ marginBottom: '1.5rem' }}>Register for Deskly</h2>
-      {error && <div className="error">{error}</div>}
+    <div className="card" style={{ maxWidth: '480px', width: '100%', margin: '0 auto', padding: '36px 32px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div 
+          className="logo-icon-badge" 
+          style={{ width: '52px', height: '52px', margin: '0 auto 16px', borderRadius: '14px' }}
+        >
+          <Layers size={28} />
+        </div>
+        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Create your account</h2>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+          Get started with Deskly workspace today
+        </p>
+      </div>
+
+      {error && (
+        <div className="error">
+          <AlertCircle size={18} style={{ flexShrink: 0 }} />
+          <span>{error}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="firstName">First Name</label>
-          <input
-            type="text"
-            id="firstName"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-          />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div className="form-group">
+            <label htmlFor="firstName">First Name</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                id="firstName"
+                placeholder="Jane"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                style={{ paddingLeft: '38px' }}
+                required
+              />
+              <User 
+                size={16} 
+                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} 
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                id="lastName"
+                placeholder="Doe"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                style={{ paddingLeft: '38px' }}
+                required
+              />
+              <User 
+                size={16} 
+                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} 
+              />
+            </div>
+          </div>
         </div>
+
         <div className="form-group">
-          <label htmlFor="lastName">Last Name</label>
-          <input
-            type="text"
-            id="lastName"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-          />
+          <label htmlFor="email">Email Address</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="email"
+              id="email"
+              placeholder="jane.doe@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ paddingLeft: '38px' }}
+              required
+            />
+            <Mail 
+              size={16} 
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} 
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+
         <div className="form-group">
           <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type="password"
+              id="password"
+              placeholder="Minimum 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ paddingLeft: '38px' }}
+              required
+            />
+            <Lock 
+              size={16} 
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} 
+            />
+          </div>
         </div>
-        <div className="form-group">
+
+        <div className="form-group" style={{ marginBottom: '24px' }}>
           <label htmlFor="organizationSlug">Organization Slug (optional)</label>
-          <input
-            type="text"
-            id="organizationSlug"
-            value={organizationSlug}
-            onChange={(e) => setOrganizationSlug(e.target.value)}
-            placeholder="e.g., acme-corp"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              id="organizationSlug"
+              value={organizationSlug}
+              onChange={(e) => setOrganizationSlug(e.target.value)}
+              placeholder="e.g., acme-corp"
+              style={{ paddingLeft: '38px' }}
+            />
+            <Building 
+              size={16} 
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} 
+            />
+          </div>
         </div>
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Registering...' : 'Register'}
+
+        <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={loading}>
+          {loading ? (
+            <>
+              <div className="spinner" style={{ width: '18px', height: '18px', borderWidth: '2px' }}></div>
+              <span>Creating account...</span>
+            </>
+          ) : (
+            <>
+              <UserPlus size={18} />
+              <span>Create Account</span>
+            </>
+          )}
         </button>
       </form>
-      <p style={{ marginTop: '1rem' }}>
-        Already have an account? <a href="/">Login</a>
-      </p>
+
+      <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+        <p style={{ fontSize: '0.9rem' }}>
+          Already have an account?{' '}
+          <a href="/" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+            Sign in
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

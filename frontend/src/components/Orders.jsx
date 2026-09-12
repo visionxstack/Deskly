@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ShoppingBag, Plus, ArrowLeft, Trash2, Tag, CheckCircle2, DollarSign, Download, AlertCircle, ShoppingCart } from './Icons';
 
 function Orders({ user }) {
   const [orders, setOrders] = useState([]);
@@ -94,7 +95,7 @@ function Orders({ user }) {
           items: cart.map(item => ({
             product_id: item.product_id,
             quantity: item.quantity,
-            unit_price: item.price // VULNERABILITY: Client-modifiable price
+            unit_price: item.price
           })),
           discount_code: discountCode || undefined
         }),
@@ -180,86 +181,153 @@ function Orders({ user }) {
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   if (loading) {
-    return <div className="loading">Loading orders...</div>;
+    return (
+      <div className="loading-spinner-container">
+        <div className="spinner"></div>
+        <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>Loading workspace orders...</p>
+      </div>
+    );
   }
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1>Orders</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+            <ShoppingBag size={28} style={{ color: '#10b981' }} />
+            Orders & Catalog
+          </h1>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            Place hardware/software orders and manage billing history
+          </p>
+        </div>
         <button 
-          className="btn btn-primary" 
+          className={showCreateForm ? "btn btn-secondary" : "btn btn-primary"}
           onClick={() => setShowCreateForm(!showCreateForm)}
         >
-          {showCreateForm ? 'Cancel' : 'New Order'}
+          {showCreateForm ? 'Cancel' : (
+            <>
+              <Plus size={18} />
+              <span>Create New Order</span>
+            </>
+          )}
         </button>
       </div>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error">
+          <AlertCircle size={18} />
+          <span>{error}</span>
+        </div>
+      )}
 
       {showCreateForm && (
-        <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <h3>Create New Order</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <div className="card-header">
+            <h2 className="card-title">
+              <ShoppingCart size={20} style={{ color: 'var(--primary)' }} />
+              Product Catalog & Cart
+            </h2>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '24px' }}>
             <div>
-              <h4>Products</h4>
-              {products.map((product) => (
-                <div key={product.id} className="card" style={{ padding: '1rem', marginBottom: '0.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h4 style={{ marginBottom: '14px' }}>Available Products ({products.length})</h4>
+              <div className="product-grid">
+                {products.map((product) => (
+                  <div key={product.id} className="product-card">
                     <div>
-                      <strong>{product.name}</strong>
-                      <p style={{ fontSize: '0.875rem', color: '#666' }}>{product.description}</p>
-                      <p style={{ fontWeight: 'bold', color: '#27ae60' }}>${product.price}</p>
+                      <h3 style={{ fontSize: '1rem', marginBottom: '4px' }}>{product.name}</h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{product.description}</p>
                     </div>
-                    <button 
-                      className="btn btn-primary"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      Add to Cart
-                    </button>
+                    <div>
+                      <div className="product-price">${Number(product.price).toFixed(2)}</div>
+                      <button 
+                        className="btn btn-secondary btn-block btn-sm"
+                        onClick={() => handleAddToCart(product)}
+                        style={{ gap: '6px' }}
+                      >
+                        <Plus size={14} />
+                        <span>Add to Cart</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-            <div>
-              <h4>Cart ({cart.length} items)</h4>
+
+            {/* Cart Panel */}
+            <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', height: 'fit-content' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '1.05rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShoppingCart size={18} />
+                  Shopping Cart
+                </h3>
+                <span className="status-badge status-open" style={{ padding: '2px 8px' }}>
+                  {cart.reduce((a, c) => a + c.quantity, 0)} items
+                </span>
+              </div>
+
               {cart.length > 0 ? (
                 <>
-                  {cart.map((item) => {
-                    const product = products.find(p => p.id === item.product_id);
-                    return (
-                      <div key={item.product_id} className="card" style={{ padding: '0.5rem', marginBottom: '0.5rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>{product?.name}</span>
-                          <button 
-                            className="btn btn-danger" 
-                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                            onClick={() => handleRemoveFromCart(item.product_id)}
-                          >
-                            Remove
-                          </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px', maxHeight: '280px', overflowY: 'auto' }}>
+                    {cart.map((item) => {
+                      const product = products.find(p => p.id === item.product_id);
+                      return (
+                        <div key={item.product_id} style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{product?.name}</span>
+                            <button 
+                              className="btn btn-danger btn-sm" 
+                              style={{ padding: '2px 6px', borderRadius: '4px' }}
+                              onClick={() => handleRemoveFromCart(item.product_id)}
+                              title="Remove item"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                            <span>Qty: {item.quantity} × ${Number(item.price).toFixed(2)}</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>${(item.price * item.quantity).toFixed(2)}</span>
+                          </div>
                         </div>
-                        <p>Quantity: {item.quantity} × ${item.price}</p>
-                      </div>
-                    );
-                  })}
-                  <div className="form-group">
-                    <label htmlFor="discountCode">Discount Code</label>
-                    <input
-                      type="text"
-                      id="discountCode"
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value)}
-                      placeholder="e.g., WELCOME10"
-                    />
+                      );
+                    })}
                   </div>
-                  <p style={{ fontWeight: 'bold', fontSize: '1.25rem' }}>Total: ${cartTotal.toFixed(2)}</p>
-                  <button className="btn btn-primary" onClick={handleCreateOrder} style={{ width: '100%' }}>
-                    Place Order
+
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label htmlFor="discountCode" style={{ fontSize: '0.8rem' }}>Discount Code</label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        id="discountCode"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        placeholder="e.g., WELCOME10"
+                        style={{ paddingLeft: '34px', fontSize: '0.85rem' }}
+                      />
+                      <Tag size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 800 }}>
+                      <span>Total:</span>
+                      <span style={{ color: 'var(--primary)' }}>${cartTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <button className="btn btn-primary btn-block" onClick={handleCreateOrder}>
+                    <CheckCircle2 size={16} />
+                    <span>Place Order</span>
                   </button>
                 </>
               ) : (
-                <p style={{ color: '#666' }}>Cart is empty</p>
+                <div style={{ textAlign: 'center', padding: '32px 12px' }}>
+                  <ShoppingCart size={32} style={{ color: 'var(--text-light)', marginBottom: '8px' }} />
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Your cart is empty.</p>
+                  <p style={{ color: 'var(--text-light)', fontSize: '0.775rem' }}>Select products to add items.</p>
+                </div>
               )}
             </div>
           </div>
@@ -269,76 +337,136 @@ function Orders({ user }) {
       {selectedOrder ? (
         <div className="card">
           <button 
-            className="btn btn-secondary" 
+            className="btn btn-secondary btn-sm" 
             onClick={() => setSelectedOrder(null)}
-            style={{ marginBottom: '1rem' }}
+            style={{ marginBottom: '20px', gap: '6px' }}
           >
-            ← Back to Orders
+            <ArrowLeft size={16} />
+            <span>Back to Orders</span>
           </button>
-          <h2>Order #{selectedOrder.order.id.slice(0, 8)}</h2>
-          <div style={{ marginBottom: '1rem' }}>
-            <span className={`status-badge ${getStatusClass(selectedOrder.order.status)}`}>
-              {selectedOrder.order.status}
-            </span>
-          </div>
-          <p><strong>Total:</strong> ${selectedOrder.order.final_amount}</p>
-          {selectedOrder.order.discount_code && (
-            <p><strong>Discount Code:</strong> {selectedOrder.order.discount_code} (-${selectedOrder.order.discount_amount})</p>
-          )}
-          <p><strong>Created:</strong> {new Date(selectedOrder.order.created_at).toLocaleString()}</p>
           
-          <h3 style={{ marginTop: '1.5rem' }}>Items</h3>
-          {selectedOrder.items.map((item) => (
-            <div key={item.id} className="card" style={{ padding: '1rem', marginBottom: '0.5rem' }}>
-              <p><strong>{item.product_name}</strong></p>
-              <p>Quantity: {item.quantity} × ${item.unit_price} = ${item.total_price}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                <span className={`status-badge ${getStatusClass(selectedOrder.order.status)}`}>
+                  {selectedOrder.order.status}
+                </span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Placed on {new Date(selectedOrder.order.created_at).toLocaleString()}
+                </span>
+              </div>
+              <h2 style={{ fontSize: '1.6rem' }}>Order #{selectedOrder.order.id.slice(0, 8)}</h2>
             </div>
-          ))}
+            
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Paid</p>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#10b981' }}>
+                ${Number(selectedOrder.order.final_amount).toFixed(2)}
+              </div>
+            </div>
+          </div>
 
-          {selectedOrder.order.status === 'delivered' && (
-            <button 
-              className="btn btn-danger" 
-              onClick={() => handleRequestRefund(selectedOrder.order.id)}
-              style={{ marginTop: '1rem' }}
-            >
-              Request Refund
-            </button>
+          {selectedOrder.order.discount_code && (
+            <div style={{ background: '#ecfdf5', padding: '10px 14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px', fontSize: '0.875rem', color: '#065f46', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Tag size={16} />
+              <span>Applied Discount Code <strong>{selectedOrder.order.discount_code}</strong> (-${selectedOrder.order.discount_amount})</span>
+            </div>
           )}
-        </div>
-      ) : (
-        <div className="card">
-          {orders.length > 0 ? (
+
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '14px' }}>Itemized Breakdown</h3>
+          <div className="table-responsive" style={{ marginBottom: '20px' }}>
             <table className="table">
               <thead>
                 <tr>
-                  <th>Order ID</th>
-                  <th>Status</th>
-                  <th>Total</th>
-                  <th>Created</th>
-                  <th>Actions</th>
+                  <th>Product Name</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th style={{ textAlign: 'right' }}>Subtotal</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id}>
-                    <td>#{order.id.slice(0, 8)}</td>
-                    <td><span className={`status-badge ${getStatusClass(order.status)}`}>{order.status}</span></td>
-                    <td>${order.final_amount}</td>
-                    <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                    <td>
-                      <button 
-                        className="btn btn-secondary" 
-                        onClick={() => fetchOrderDetails(order.id)}
-                      >
-                        View
-                      </button>
-                    </td>
+                {selectedOrder.items.map((item) => (
+                  <tr key={item.id}>
+                    <td style={{ fontWeight: 600 }}>{item.product_name}</td>
+                    <td>{item.quantity}</td>
+                    <td>${Number(item.unit_price).toFixed(2)}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 700 }}>${Number(item.total_price).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {selectedOrder.order.status === 'delivered' && (
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+              <button 
+                className="btn btn-danger" 
+                onClick={() => handleRequestRefund(selectedOrder.order.id)}
+              >
+                Request Refund
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          {orders.length > 0 ? (
+            <div className="table-responsive">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Order Reference</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Created Date</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id}>
+                      <td style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, color: 'var(--primary)' }}>
+                        #{order.id.slice(0, 8)}
+                      </td>
+                      <td>
+                        <span className={`status-badge ${getStatusClass(order.status)}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                        ${Number(order.final_amount).toFixed(2)}
+                      </td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button 
+                          className="btn btn-secondary btn-sm" 
+                          onClick={() => fetchOrderDetails(order.id)}
+                        >
+                          View Order
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <p style={{ textAlign: 'center', color: '#666' }}>No orders found.</p>
+            <div style={{ textAlign: 'center', padding: '48px 20px' }}>
+              <ShoppingBag size={40} style={{ color: 'var(--text-light)', marginBottom: '12px' }} />
+              <h3 style={{ marginBottom: '4px' }}>No Orders Recorded</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
+                You have not placed any orders yet. Browse our catalog to get started.
+              </p>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => setShowCreateForm(true)}
+              >
+                <Plus size={16} />
+                <span>Browse Products</span>
+              </button>
+            </div>
           )}
         </div>
       )}

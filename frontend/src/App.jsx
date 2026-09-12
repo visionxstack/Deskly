@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { LayoutDashboard, Ticket, ShoppingBag, ShieldCheck, LogOut, Layers, Sparkles } from './components/Icons';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -7,6 +8,58 @@ import Tickets from './components/Tickets';
 import Orders from './components/Orders';
 import AdminPanel from './components/AdminPanel';
 import './index.css';
+
+function NavLinks({ user, handleLogout }) {
+  const location = useLocation();
+  const getInitials = (firstName, lastName) => {
+    if (!firstName) return 'U';
+    return `${firstName[0]}${lastName ? lastName[0] : ''}`.toUpperCase();
+  };
+
+  return (
+    <header className="header">
+      <div className="container header-content">
+        <Link to="/dashboard" className="logo-container">
+          <div className="logo-icon-badge">
+            <Layers size={22} />
+          </div>
+          <span className="logo-text">Deskly</span>
+        </Link>
+        
+        <nav className="nav">
+          <Link to="/dashboard" className={location.pathname === '/dashboard' || location.pathname === '/' ? 'active' : ''}>
+            <LayoutDashboard size={16} />
+            <span>Dashboard</span>
+          </Link>
+          <Link to="/tickets" className={location.pathname === '/tickets' ? 'active' : ''}>
+            <Ticket size={16} />
+            <span>Tickets</span>
+          </Link>
+          <Link to="/orders" className={location.pathname === '/orders' ? 'active' : ''}>
+            <ShoppingBag size={16} />
+            <span>Orders</span>
+          </Link>
+          {user.role === 'platform_admin' && (
+            <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
+              <ShieldCheck size={16} />
+              <span>Admin</span>
+            </Link>
+          )}
+        </nav>
+
+        <div className="user-profile-badge">
+          <div className="user-avatar" title={`${user.first_name} ${user.last_name}`}>
+            {getInitials(user.first_name, user.last_name)}
+          </div>
+          <button onClick={handleLogout} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
+            <LogOut size={14} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -58,7 +111,12 @@ function App() {
   };
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="loading-spinner-container">
+        <div className="spinner"></div>
+        <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>Loading Deskly platform...</p>
+      </div>
+    );
   }
 
   return (
@@ -66,18 +124,7 @@ function App() {
       <div className="App">
         {user ? (
           <>
-            <header className="header">
-              <div className="container header-content">
-                <div className="logo">Deskly</div>
-                <nav className="nav">
-                  <Link to="/dashboard">Dashboard</Link>
-                  <Link to="/tickets">Tickets</Link>
-                  <Link to="/orders">Orders</Link>
-                  {user.role === 'platform_admin' && <Link to="/admin">Admin</Link>}
-                  <button onClick={handleLogout} className="btn btn-secondary">Logout</button>
-                </nav>
-              </div>
-            </header>
+            <NavLinks user={user} handleLogout={handleLogout} />
             <main className="container">
               <Routes>
                 <Route path="/dashboard" element={<Dashboard user={user} />} />
@@ -89,7 +136,7 @@ function App() {
             </main>
           </>
         ) : (
-          <div className="container">
+          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '90vh' }}>
             <Routes>
               <Route path="/register" element={<Register onLogin={handleLogin} />} />
               <Route path="/" element={<Login onLogin={handleLogin} />} />
